@@ -4,9 +4,7 @@ import (
 	"github.com/ericchiang/k8s"
 	"github.com/golang/glog"
 	"context"
-	"io/ioutil"
 	"fmt"
-	"github.com/ghodss/yaml"
 )
 
 type ResourceProbe struct{
@@ -14,17 +12,19 @@ type ResourceProbe struct{
 	client *k8s.Client
 }
 
-func (pp *ResourceProbe) initClient() (*k8s.Client){
-	_client, err := k8s.NewInClusterClient()
+func (*ResourceProbe) InitClient() (*k8s.Client){
+	client, err := k8s.NewInClusterClient()
 	if err != nil {
-		glog.Error(err)
-		panic("Failed to get client!")
+		glog.Error("Failed to init client!", err)
+	} else {
+		glog.Info("Succeed initing client!")
 	}
-	return _client
+	return client
 }
 
 func (pp *ResourceProbe) ListNodes() {
-	nodes, _ := pp.initClient().CoreV1().ListNodes(context.Background())
+	nodes, _ := pp.InitClient().CoreV1().ListNodes(context.Background())
+	fmt.Println(nodes)
 	for _, node := range nodes.Items {
 		//fmt.Println(node.String())
 		glog.Info("name=%q schedulable=%t memory:%s/%s\n", *node.Metadata.Name, !*node.Spec.Unschedulable,
