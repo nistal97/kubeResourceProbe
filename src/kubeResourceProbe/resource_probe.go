@@ -13,8 +13,8 @@ type  (
 		client *k8s.Client
 	}
     WatchableResources struct{
-    	configmaps []string
-    	secrets []string
+    	Configmaps []string
+    	Secrets []string
 	}
 )
 
@@ -33,7 +33,7 @@ func (*ResourceProbe) initClient() (*k8s.Client){
 	return client
 }
 
-func (pp *ResourceProbe) WatchResource(resources WatchableResources) {
+func (pp *ResourceProbe) WatchResource(resources *WatchableResources) {
 	if pp.client == nil {
 		pp.client = pp.initClient()
 	}
