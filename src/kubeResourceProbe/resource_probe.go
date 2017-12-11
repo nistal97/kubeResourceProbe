@@ -4,7 +4,6 @@ import (
 	"github.com/ericchiang/k8s"
 	"github.com/golang/glog"
 	"context"
-	"fmt"
     "os"
 )
 
