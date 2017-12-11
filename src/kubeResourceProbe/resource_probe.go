@@ -38,7 +38,7 @@ func (pp *ResourceProbe) WatchResource(resources WatchableResources) {
 		pp.client = pp.initClient()
 	}
 	CoreV1ConfigMapWatcher, err := pp.client.CoreV1().WatchConfigMaps(context.Background(), "app-ns")
-	defer CoreV1ConfigMapWatcher.Close()
+	//defer CoreV1ConfigMapWatcher.Close()
 	if err != nil {
 		glog.Error("Watch Configmaps Failed:", err)
 	} else {
