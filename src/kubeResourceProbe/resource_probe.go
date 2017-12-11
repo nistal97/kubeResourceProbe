@@ -9,7 +9,7 @@ import (
 type ResourceProbe struct{
 }
 
-func (*ResourceProbe) initClient() (*k8s.Client){
+func (*ResourceProbe) InitClient() (*k8s.Client){
 	client, err := k8s.NewInClusterClient()
 	if err != nil {
 		glog.Error("Failed to init client!")
@@ -20,7 +20,7 @@ func (*ResourceProbe) initClient() (*k8s.Client){
 }
 
 func (pp *ResourceProbe) ListNodes() {
-	nodes, _ := pp.initClient().CoreV1().ListNodes(context.Background())
+	nodes, _ := pp.InitClient().CoreV1().ListNodes(context.Background())
 	for _, node := range nodes.Items {
 		//fmt.Println(node.String())
 		glog.Info("name=%q schedulable=%t memory:%s/%s\n", *node.Metadata.Name, !*node.Spec.Unschedulable,
