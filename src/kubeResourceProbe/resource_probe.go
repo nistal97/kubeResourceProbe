@@ -30,7 +30,6 @@ func (*ResourceProbe) InitClient() (*k8s.Client){
 }
 
 func (pp *ResourceProbe) ListNodes() {
-	fmt.Println("here")
 	nodes, _ := pp.InitClient().CoreV1().ListNodes(context.Background())
 	for _, node := range nodes.Items {
 		//fmt.Println(node.String())
