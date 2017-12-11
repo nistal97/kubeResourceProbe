@@ -13,7 +13,7 @@ type ResourceProbe struct{
 }
 
 func Init() {
-	os.Setenv("KUBERNETES_SERVICE_HOST", "kubernetes.default.svc.cluster.local")
+	os.Setenv("KUBERNETES_SERVICE_HOST", "kubernetes.default")
 	os.Setenv("KUBERNETES_SERVICE_PORT", "443")
 }
 
@@ -29,12 +29,8 @@ func (*ResourceProbe) InitClient() (*k8s.Client){
 }
 
 func (pp *ResourceProbe) ListNodes() {
-	nodes, _ := pp.InitClient().CoreV1().ListNodes(context.Background())
-	for _, node := range nodes.Items {
-		//fmt.Println(node.String())
-		glog.Info("name=%q schedulable=%t memory:%s/%s\n", *node.Metadata.Name, !*node.Spec.Unschedulable,
-			*node.Status.Allocatable["memory"].String_, *node.Status.Capacity["memory"].String_)
-	}
+	pods, _ := pp.InitClient().CoreV1().ListPods(context.Background(), "app-ns")
+	glog.Info(len(pods.Items))
 }
 
 func (*ResourceProbe) WatchResource() {
