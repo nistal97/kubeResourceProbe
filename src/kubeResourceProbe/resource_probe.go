@@ -12,7 +12,7 @@ type ResourceProbe struct{
 func (*ResourceProbe) InitClient() (*k8s.Client){
 	client, err := k8s.NewInClusterClient()
 	if err != nil {
-		glog.Error("Failed to init client!")
+		glog.Error("Failed to init client ", err)
 	} else {
 		glog.Info("Succeed initing client!")
 	}
