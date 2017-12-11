@@ -53,7 +53,7 @@ func (*ResourceProbe) watch(CoreV1ConfigMapWatcher *k8s.CoreV1ConfigMapWatcher){
 			glog.Error("Error occued in watch resource:", err)
 		}
 	}()
-infiniteWatch:
+infiniteWar:
 	if event, _, err := CoreV1ConfigMapWatcher.Next(); err != nil {
 		glog.Error("Failed to watch configmaps:", err)
 	} else {
@@ -62,7 +62,7 @@ infiniteWatch:
 		}
 	}
 	time.Sleep(3 * time.Second)
-	goto infiniteWatch
+	goto infiniteWar
 }
 
 
