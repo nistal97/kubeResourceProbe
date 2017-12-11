@@ -5,6 +5,7 @@ import (
 	"github.com/golang/glog"
 	"context"
     "os"
+	"time"
 )
 
 type  (
@@ -39,7 +40,7 @@ func (pp *ResourceProbe) WatchResource(resources WatchableResources) {
 	CoreV1ConfigMapWatcher, err := pp.client.CoreV1().WatchConfigMaps(context.Background(), "app-ns")
 	defer CoreV1ConfigMapWatcher.Close()
 	if err != nil {
-		glog.Error("Watch Configmaps Failed!")
+		glog.Error("Watch Configmaps Failed:", err)
 	} else {
 		glog.Info("Now watching configmaps...")
 		go pp.watch(CoreV1ConfigMapWatcher)
@@ -47,13 +48,21 @@ func (pp *ResourceProbe) WatchResource(resources WatchableResources) {
 }
 
 func (*ResourceProbe) watch(CoreV1ConfigMapWatcher *k8s.CoreV1ConfigMapWatcher){
+	defer func() {
+		if err := recover(); err != nil {
+			glog.Error("Error occued in watch resource:", err)
+		}
+	}()
+infiniteWatch:
 	if event, _, err := CoreV1ConfigMapWatcher.Next(); err != nil {
-		glog.Error("Failed to watch configmaps")
+		glog.Error("Failed to watch configmaps:", err)
 	} else {
 		if *event.Type == k8s.EventModified {
 			glog.Info("configMap is modified..")
 		}
 	}
+	time.Sleep(3 * time.Second)
+	goto infiniteWatch
 }
 
 
