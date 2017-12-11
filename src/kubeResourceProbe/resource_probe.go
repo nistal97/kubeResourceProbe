@@ -48,7 +48,6 @@ func (pp *ResourceProbe) WatchResource(resources *WatchableResources) {
 }
 
 func (*ResourceProbe) watch(CoreV1ConfigMapWatcher *k8s.CoreV1ConfigMapWatcher){
-	glog.Info("a")
 	defer func() {
 		if err := recover(); err != nil {
 			glog.Error("Error occued in watch resource:", err)
@@ -58,7 +57,7 @@ infiniteWar:
 	if event, _, err := CoreV1ConfigMapWatcher.Next(); err != nil {
 		glog.Error("Failed to watch configmaps:", err)
 	} else {
-		glog.Info("configmap event!")
+		glog.Info("configmap event:" +  event.String())
 		if *event.Type == k8s.EventModified {
 			glog.Info("configMap is modified..")
 		}
