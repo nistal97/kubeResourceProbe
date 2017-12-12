@@ -50,14 +50,14 @@ func (pp *ResourceProbe) watchResource(resources *WatchableResources){
 		}
 	}()
 
-	CoreV1ConfigMapWatcher, err := pp.watchConfigmaps(resources.ns)
+	CoreV1ConfigMapWatcher, err := pp.watchConfigmaps(resources.NS)
 	defer CoreV1ConfigMapWatcher.Close()
 
 infiniteWar:
 	time.Sleep(2 * time.Second)
 	if err != nil {
 		glog.Error("Failed to watch configmaps, keep trying:", err)
-		CoreV1ConfigMapWatcher, err = pp.watchConfigmaps(resources.ns)
+		CoreV1ConfigMapWatcher, err = pp.watchConfigmaps(resources.NS)
 	} else {
 		if event, _, err := CoreV1ConfigMapWatcher.Next(); err != nil {
 			glog.Error("Failed to get next watch event, try to rewatch...")
