@@ -4,8 +4,9 @@ import (
 	"github.com/ericchiang/k8s"
 	"github.com/golang/glog"
 	"context"
-    "os"
+	"os"
 	"time"
+	"flag"
 )
 
 type  (
@@ -24,6 +25,7 @@ type  (
 func Init() {
 	os.Setenv("KUBERNETES_SERVICE_HOST", "kubernetes.default")
 	os.Setenv("KUBERNETES_SERVICE_PORT", "443")
+	flag.Parse()
 }
 
 func (*ResourceProbe) initClient() (*k8s.Client){
@@ -61,6 +63,7 @@ infiniteWar:
 		} else {
 			if *event.Type == k8s.EventModified {
 				confs := make([]map[string]string, len(resources.Configmaps))
+				glog.Info("modify happened!")
 				for _, cm := range resources.Configmaps {
 					if got.Metadata.GetName() == cm {
 						confs = append(confs, got.Data)
@@ -72,6 +75,7 @@ infiniteWar:
 				}
 			}
 		}
+		time.Sleep(2 * time.Minute)
 		goto infiniteWar
 	}
 }
