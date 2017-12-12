@@ -15,7 +15,7 @@ type  (
     WatchableResources struct{
     	Configmaps []string
     	Secrets []string
-    	ConfigmapChangeHandler func()
+    	ConfigmapChangeHandler func([]map[string]string)
 		SecretChangeHandler func()
 		NS string
 	}
@@ -59,17 +59,22 @@ infiniteWar:
 		glog.Error("Failed to watch configmaps, keep trying:", err)
 		CoreV1ConfigMapWatcher, err = pp.watchConfigmaps(resources.NS)
 	} else {
-		if event, _, err := CoreV1ConfigMapWatcher.Next(); err != nil {
+		if event, got, err := CoreV1ConfigMapWatcher.Next(); err != nil {
 			glog.Error("Failed to get next watch event, try to rewatch...")
 			CoreV1ConfigMapWatcher.Close()
 			goto infiniteWar
 		} else {
 			if *event.Type == k8s.EventModified {
-				glog.Info(event.String())
-				glog.Info(event.Marshal())
-				/*for cm := range resources.Configmaps {
-
-				}*/
+				confs := make([]map[string]string, len(resources.Configmaps))
+				for _, cm := range resources.Configmaps {
+					if got.Metadata.GetName() == cm {
+						confs = append(confs, got.Data)
+						glog.Info("configmap %s update captured!", cm)
+					}
+				}
+				if len(confs) > 0 {
+					resources.ConfigmapChangeHandler(confs)
+				}
 			}
 		}
 	}
