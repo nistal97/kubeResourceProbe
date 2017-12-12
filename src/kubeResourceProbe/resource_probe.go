@@ -77,7 +77,7 @@ infiniteWar:
 				}
 			}
 		}
-		time.Sleep(2 * time.Minute)
+		time.Sleep(3 * time.Second)
 		goto infiniteWar
 	}
 }
