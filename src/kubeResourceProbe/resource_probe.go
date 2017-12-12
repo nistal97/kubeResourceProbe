@@ -52,17 +52,12 @@ func (pp *ResourceProbe) watchResource(resources *WatchableResources){
 
 	CoreV1ConfigMapWatcher, err := pp.watchConfigmaps(resources.NS)
 	defer CoreV1ConfigMapWatcher.Close()
-
-infiniteWar:
-	time.Sleep(2 * time.Second)
 	if err != nil {
 		glog.Error("Failed to watch configmaps, keep trying:", err)
-		CoreV1ConfigMapWatcher, err = pp.watchConfigmaps(resources.NS)
 	} else {
+infiniteWar:
 		if event, got, err := CoreV1ConfigMapWatcher.Next(); err != nil {
 			glog.Error("Failed to get next watch event, try to rewatch...")
-			CoreV1ConfigMapWatcher.Close()
-			goto infiniteWar
 		} else {
 			if *event.Type == k8s.EventModified {
 				confs := make([]map[string]string, len(resources.Configmaps))
@@ -77,8 +72,8 @@ infiniteWar:
 				}
 			}
 		}
+		goto infiniteWar
 	}
-	goto infiniteWar
 }
 
 func (pp *ResourceProbe) watchConfigmaps(ns string) (*k8s.CoreV1ConfigMapWatcher, error){
