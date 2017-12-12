@@ -15,6 +15,9 @@ type  (
     WatchableResources struct{
     	Configmaps []string
     	Secrets []string
+    	ConfigmapChangeHandler func()
+		SecretChangeHandler func()
+		ns string
 	}
 )
 
@@ -37,35 +40,48 @@ func (pp *ResourceProbe) WatchResource(resources *WatchableResources) {
 	if pp.client == nil {
 		pp.client = pp.initClient()
 	}
-	CoreV1ConfigMapWatcher, err := pp.client.CoreV1().WatchConfigMaps(context.Background(), "app-ns")
-	//defer CoreV1ConfigMapWatcher.Close()
-	if err != nil {
-		glog.Error("Watch Configmaps Failed:", err)
-	} else {
-		glog.Info("Now watching configmaps...")
-		go pp.watch(CoreV1ConfigMapWatcher)
-	}
+	go pp.watchResource(resources)
 }
 
-func (*ResourceProbe) watch(CoreV1ConfigMapWatcher *k8s.CoreV1ConfigMapWatcher){
+func (pp *ResourceProbe) watchResource(resources *WatchableResources){
 	defer func() {
 		if err := recover(); err != nil {
 			glog.Error("Error occued in watch resource:", err)
 		}
 	}()
+
+	CoreV1ConfigMapWatcher, err := pp.watchConfigmaps(resources.ns)
+	defer CoreV1ConfigMapWatcher.Close()
+
 infiniteWar:
-	if event, _, err := CoreV1ConfigMapWatcher.Next(); err != nil {
-		glog.Error("Failed to watch configmaps:", err)
+	time.Sleep(2 * time.Second)
+	if err != nil {
+		glog.Error("Failed to watch configmaps, keep trying:", err)
+		CoreV1ConfigMapWatcher, err = pp.watchConfigmaps(resources.ns)
 	} else {
-		glog.Info("configmap event:" +  event.String())
-		if *event.Type == k8s.EventModified {
-			glog.Info("configMap is modified..")
+		if event, _, err := CoreV1ConfigMapWatcher.Next(); err != nil {
+			glog.Error("Failed to get next watch event, try to rewatch...")
+			CoreV1ConfigMapWatcher.Close()
+			goto infiniteWar
+		} else {
+			if *event.Type == k8s.EventModified {
+				glog.Info("event Modified:")
+				glog.Info(event)
+			}
 		}
 	}
-	time.Sleep(3 * time.Second)
 	goto infiniteWar
 }
 
+func (pp *ResourceProbe) watchConfigmaps(ns string) (*k8s.CoreV1ConfigMapWatcher, error){
+	CoreV1ConfigMapWatcher, err := pp.client.CoreV1().WatchConfigMaps(context.Background(), ns)
+	if err != nil {
+		glog.Error("Watch Configmaps Failed:", err)
+	} else {
+		glog.Error("Succeed in watching configmaps...")
+	}
+	return CoreV1ConfigMapWatcher, err
+}
 
 
 
