@@ -59,11 +59,12 @@ func (pp *ResourceProbe) watchResource(resources *WatchableResources){
 	} else {
 infiniteWar:
 		if event, got, err := CoreV1ConfigMapWatcher.Next(); err != nil {
-			glog.Error("Failed to get next watch event, try to rewatch...")
+			glog.Error("Failed to get next watch event")
 		} else {
 			if *event.Type == k8s.EventModified {
-				confs := make([]map[string]string, len(resources.Configmaps))
 				glog.Info("modify happened!")
+				confs := make([]map[string]string, len(resources.Configmaps))
+				glog.Info("confs!")
 				for _, cm := range resources.Configmaps {
 					if got.Metadata.GetName() == cm {
 						confs = append(confs, got.Data)
