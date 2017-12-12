@@ -61,6 +61,7 @@ infiniteWar:
 		if event, got, err := CoreV1ConfigMapWatcher.Next(); err != nil {
 			glog.Error("Failed to get next watch event")
 		} else {
+			glog.Info("event happened!")
 			if *event.Type == k8s.EventModified {
 				glog.Info("modify happened!")
 				confs := make([]map[string]string, len(resources.Configmaps))
