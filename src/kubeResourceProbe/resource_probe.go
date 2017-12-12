@@ -17,7 +17,7 @@ type  (
     	Secrets []string
     	ConfigmapChangeHandler func()
 		SecretChangeHandler func()
-		ns string
+		NS string
 	}
 )
 
