@@ -7,11 +7,13 @@ import (
 	"os"
 	"time"
 	"flag"
+	"sync"
 )
 
 type  (
 	ResourceProbe struct{
 		client *k8s.Client
+		once sync.Once
 	}
     WatchableResources struct{
     	Configmaps []string
@@ -25,7 +27,6 @@ type  (
 func Init() {
 	os.Setenv("KUBERNETES_SERVICE_HOST", "kubernetes.default")
 	os.Setenv("KUBERNETES_SERVICE_PORT", "443")
-	flag.Parse()
 }
 
 func (*ResourceProbe) initClient() (*k8s.Client){
@@ -39,9 +40,10 @@ func (*ResourceProbe) initClient() (*k8s.Client){
 }
 
 func (pp *ResourceProbe) WatchResource(resources *WatchableResources) {
-	if pp.client == nil {
+	flag.Parse()
+	pp.once.Do(func(){
 		pp.client = pp.initClient()
-	}
+	})
 	go pp.watchResource(resources)
 }
 
@@ -66,7 +68,7 @@ infiniteWar:
 				for _, cm := range resources.Configmaps {
 					if got.Metadata.GetName() == cm {
 						confs = append(confs, got.Data)
-						glog.Info("configmap %q update captured!", cm)
+						glog.Infof("configmap %s update captured!", cm)
 					}
 				}
 				if len(confs) > 0 {
