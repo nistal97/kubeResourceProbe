@@ -65,8 +65,11 @@ infiniteWar:
 			goto infiniteWar
 		} else {
 			if *event.Type == k8s.EventModified {
-				glog.Info("event Modified:")
-				glog.Info(event)
+				glog.Info(event.String())
+				glog.Info(event.Marshal())
+				/*for cm := range resources.Configmaps {
+
+				}*/
 			}
 		}
 	}
