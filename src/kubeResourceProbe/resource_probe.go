@@ -71,11 +71,14 @@ func (pp *ResourceProbe) WatchResource(resources *WatchableResources) {
 }
 
 func (pp *ResourceProbe) startWatch(resources *WatchableResources){
-	/*defer func() {
+	defer func() {
 		if err := recover(); err != nil {
 			glog.Error("Error occued in watch resource:", err)
+			pp.wait()
+			//rewatch
+			pp.startWatch(resources)
 		}
-	}()*/
+	}()
 reWatch:
 	confWatcher, err1 := pp.watchConfigmaps(resources.NS)
 	secrtWatcher, err2 := pp.watchSecrets(resources.NS)
