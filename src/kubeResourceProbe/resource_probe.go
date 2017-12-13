@@ -71,11 +71,11 @@ func (pp *ResourceProbe) WatchResource(resources *WatchableResources) {
 }
 
 func (pp *ResourceProbe) startWatch(resources *WatchableResources){
-	defer func() {
+	/*defer func() {
 		if err := recover(); err != nil {
 			glog.Error("Error occued in watch resource:", err)
 		}
-	}()
+	}()*/
 reWatch:
 	confWatcher, err1 := pp.watchConfigmaps(resources.NS)
 	secrtWatcher, err2 := pp.watchSecrets(resources.NS)
@@ -109,6 +109,7 @@ infiniteWar:
 		pp.processEvt(*evt1.Type, *got1.Metadata.Name, got1.Data, resources.Configmaps, resources.ConfigmapChangeHandler)
 	}
 	if err2 == nil {
+		//slice performance downgrade, acceptable
 		data := make(map[string]string)
 		for k, v := range got2.Data {
 			data[k] = string(v)
@@ -159,7 +160,7 @@ func (pp *ResourceProbe) watchSecrets(ns string) (*k8s.CoreV1SecretWatcher, erro
 	if err != nil {
 		glog.Error("Watch secret Failed:", err)
 	} else {
-		glog.Error("Succeed in watching configmaps...")
+		glog.Error("Succeed in watching secrets...")
 	}
 	return CoreV1SecretWatcher, err
 }
