@@ -81,7 +81,7 @@ func (pp *ResourceProbe) startWatch(resources *WatchableResources){
 	}()
 reWatch:
 	confWatcher, err1 := pp.watchConfigmaps(resources.NS)
-	secrtWatcher, err2 := pp.watchSecrets(resources.NS)
+	secrtWatcher, err2 := pp.watchSecrets("kube-system")
 	if err1 != nil || err2 != nil {
 		confWatcher.Close()
 		secrtWatcher.Close()
