@@ -78,18 +78,18 @@ func (pp *ResourceProbe) startWatch(resources *WatchableResources){
 	}()
 reWatch:
 	confWatcher, err1 := pp.watchConfigmaps(resources.NS)
-	//secrtWatcher, err2 := pp.watchSecrets(resources.NS)
-	if err1 != nil  {
+	secrtWatcher, err2 := pp.watchSecrets(resources.NS)
+	if err1 != nil || err2 != nil {
 		confWatcher.Close()
-		//secrtWatcher.Close()
+		secrtWatcher.Close()
 		pp.wait()
 		goto reWatch
 	} else {
         evtWatcher1 := ConfWatcher(confWatcher)
-		//evtWatcher2 := SecrtWatcher(secrtWatcher)
+		evtWatcher2 := SecrtWatcher(secrtWatcher)
 		watchers := ResourceWatcher{
 			&evtWatcher1,
-			nil,
+			&evtWatcher2,
 		}
 		pp.watchResource(resources, watchers)
 	}
@@ -97,35 +97,35 @@ reWatch:
 
 func (pp *ResourceProbe) watchResource(resources *WatchableResources, watcher ResourceWatcher) {
 	confWatcher := (*watcher.confWatcher)
-	//SecrtWatcher := (*watcher.SecrtWatcher)
+	SecrtWatcher := (*watcher.SecrtWatcher)
 	defer confWatcher.Close()
-	//defer (*watcher.SecrtWatcher).Close()
+	defer (*watcher.SecrtWatcher).Close()
 
 infiniteWar:
 	evt1, got1, err1 := (*watcher.confWatcher).Next();
-	//evt2, got2, err2 := (*watcher.SecrtWatcher).Next();
+	evt2, got2, err2 := (*watcher.SecrtWatcher).Next();
 
 	if err1 == nil {
 		pp.processEvt(*evt1.Type, *got1.Metadata.Name, got1.Data, resources.Configmaps, resources.ConfigmapChangeHandler)
 	}
-	/*if err2 == nil {
+	if err2 == nil {
 		//slice performance downgrade, acceptable
 		data := make(map[string]string)
 		for k, v := range got2.Data {
 			data[k] = string(v)
 		}
 		pp.processEvt(*evt2.Type, *got2.Metadata.Name, data, resources.Secrets, resources.SecretChangeHandler)
-	}*/
+	}
     if err1 != nil {
 		glog.Error("Error occured:", err1)
 		confWatcher.Close()
 		confWatcher, _ = pp.watchConfigmaps(resources.NS)
 	}
-	/*if err2 != nil {
+	if err2 != nil {
 		glog.Error("Error occured:", err2)
 		SecrtWatcher.Close()
 		SecrtWatcher, _ = pp.watchSecrets(resources.NS)
-	}*/
+	}
 	pp.wait()
 	goto infiniteWar
 }
